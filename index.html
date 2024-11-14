@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <link rel="shortcut icon" href="https://i.ibb.co.com/NmGCq6k/20241114-214600.png" type="image/x-icon" />
     <style>
+        /* Gaya umum */
         body {
             font-family: 'Roboto', sans-serif;
             color: #333;
@@ -18,6 +19,7 @@
             background-color: #f4f4f9;
         }
 
+        /* Kontainer utama */
         .container {
             width: 100%;
             max-width: 400px;
@@ -44,6 +46,7 @@
             margin-bottom: 10px;
         }
 
+        /* Input */
         input[type="text"], textarea {
             width: 100%;
             padding: 12px;
@@ -61,6 +64,7 @@
             outline: none;
         }
 
+        /* Tombol utama */
         button {
             width: 100%;
             padding: 12px;
@@ -87,6 +91,7 @@
             opacity: 0.9;
         }
 
+        /* Daftar Catatan */
         #notesList {
             display: flex;
             flex-direction: column;
@@ -123,6 +128,7 @@
             width: auto;
         }
 
+        /* Modal untuk detail catatan */
         .modal {
             display: none;
             position: fixed;
@@ -220,35 +226,31 @@
     }
 
     function saveNote() {
-        let noteTitle = document.getElementById('noteTitle').value;
-        const noteContent = document.getElementById('noteContent').value;
+    let noteTitle = document.getElementById('noteTitle').value;
+    const noteContent = document.getElementById('noteContent').value;
 
-        if (noteTitle.trim() === "" || noteContent.trim() === "") {
-            swal("Peringatan", "Judul dan isi catatan tidak boleh kosong!", "warning");
-            return;
-        }
-
-        noteTitle = noteTitle.charAt(0).toUpperCase() + noteTitle.slice(1);
-
-        const notes = JSON.parse(localStorage.getItem('notesList')) || [];
-        const timestamp = new Date().getTime(); 
-        notes.push({ title: noteTitle, content: noteContent, timestamp: timestamp });
-        localStorage.setItem('notesList', JSON.stringify(notes));
-
-        document.getElementById('noteTitle').value = ""; 
-        document.getElementById('noteContent').value = ""; 
-
-        displayNotes(); 
+    if (noteTitle.trim() === "" || noteContent.trim() === "") {
+        swal("Peringatan", "Judul dan isi catatan tidak boleh kosong!", "warning");
+        return;
     }
+
+    // Ubah huruf pertama judul menjadi kapital
+    noteTitle = noteTitle.charAt(0).toUpperCase() + noteTitle.slice(1);
+
+    const notes = JSON.parse(localStorage.getItem('notesList')) || [];
+    notes.push({ title: noteTitle, content: noteContent });
+    localStorage.setItem('notesList', JSON.stringify(notes));
+
+    document.getElementById('noteTitle').value = ""; // Kosongkan input judul
+    document.getElementById('noteContent').value = ""; // Kosongkan input isi catatan
+
+    displayNotes(); // Perbarui tampilan catatan
+}
 
     function showNoteDetail(index) {
         const notes = JSON.parse(localStorage.getItem('notesList')) || [];
         const note = notes[index];
 
-        const date = new Date(note.timestamp);
-        const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
-
-        document.getElementById('detailDate').textContent = formattedDate;
         document.getElementById('detailTitle').textContent = note.title;
         document.getElementById('detailContent').textContent = note.content;
         document.getElementById('detailModal').style.display = 'flex';
@@ -256,7 +258,6 @@
 
     function closeModal() {
         document.getElementById('detailModal').style.display = 'none';
-        currentNoteIndex = null; 
     }
 
     function confirmClearNotes() {
@@ -270,23 +271,133 @@
         displayNotes();
         alert("Semua catatan berhasil dihapus!");
     }
+    
+    function showNoteDetail(index) {
+    const notes = JSON.parse(localStorage.getItem('notesList')) || [];
+    const note = notes[index];
 
-    function deleteNote() {
-        if (currentNoteIndex === null) return; 
+    // Format tanggal catatan (menggunakan tanggal saat catatan disimpan)
+    const date = new Date(note.timestamp);
+    const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
 
-        const confirmation = confirm("Apakah Anda yakin ingin menghapus catatan ini?");
-        if (!confirmation) return; 
+    document.getElementById('detailDate').textContent = formattedDate;
+    document.getElementById('detailTitle').textContent = note.title;
+    document.getElementById('detailContent').textContent = note.content;
+    document.getElementById('detailModal').style.display = 'flex';
+}
 
-        const notes = JSON.parse(localStorage.getItem('notesList')) || [];
-        notes.splice(currentNoteIndex, 1); 
-        localStorage.setItem('notesList', JSON.stringify(notes));
+function saveNote() {
+    let noteTitle = document.getElementById('noteTitle').value;
+    const noteContent = document.getElementById('noteContent').value;
 
-        displayNotes(); 
-        closeModal(); 
-        alert("Catatan berhasil dihapus!"); 
+    if (noteTitle.trim() === "" || noteContent.trim() === "") {
+        swal("Peringatan", "Judul dan isi catatan tidak boleh kosong!", "warning");
+        return;
     }
 
-    document.getElementById('currentYear').innerHTML = new Date().getFullYear();
+    // Ubah huruf pertama judul menjadi kapital
+    noteTitle = noteTitle.charAt(0).toUpperCase() + noteTitle.slice(1);
+
+    const notes = JSON.parse(localStorage.getItem('notesList')) || [];
+    const timestamp = new Date().getTime(); // Mendapatkan waktu saat ini sebagai timestamp
+    notes.push({ title: noteTitle, content: noteContent, timestamp: timestamp });
+    localStorage.setItem('notesList', JSON.stringify(notes));
+
+    document.getElementById('noteTitle').value = ""; // Kosongkan input judul
+    document.getElementById('noteContent').value = ""; // Kosongkan input isi catatan
+
+    displayNotes(); // Perbarui tampilan catatan
+}
+
+let currentNoteIndex = null; // Variabel untuk menyimpan index catatan yang sedang dilihat
+
+document.addEventListener('DOMContentLoaded', displayNotes);
+
+function displayNotes() {
+    const notes = JSON.parse(localStorage.getItem('notesList')) || [];
+    const notesDisplay = document.getElementById('notesDisplay');
+
+    notesDisplay.innerHTML = "";
+
+    notes.forEach((note, index) => {
+        const li = document.createElement('li');
+
+        const title = document.createElement('span');
+        title.textContent = note.title;
+
+        const detailBtn = document.createElement('button');
+        detailBtn.classList.add('detail-btn');
+        detailBtn.textContent = "Detail";
+        detailBtn.onclick = () => showNoteDetail(index);
+
+        li.appendChild(title);
+        li.appendChild(detailBtn);
+        notesDisplay.appendChild(li);
+    });
+}
+
+function saveNote() {
+    let noteTitle = document.getElementById('noteTitle').value;
+    const noteContent = document.getElementById('noteContent').value;
+
+    if (noteTitle.trim() === "" || noteContent.trim() === "") {
+        swal("Peringatan", "Judul dan isi catatan tidak boleh kosong!", "warning");
+        return;
+    }
+
+    // Ubah huruf pertama judul menjadi kapital
+    noteTitle = noteTitle.charAt(0).toUpperCase() + noteTitle.slice(1);
+
+    const notes = JSON.parse(localStorage.getItem('notesList')) || [];
+    const timestamp = new Date().getTime(); // Mendapatkan waktu saat ini sebagai timestamp
+    notes.push({ title: noteTitle, content: noteContent, timestamp: timestamp });
+    localStorage.setItem('notesList', JSON.stringify(notes));
+
+    document.getElementById('noteTitle').value = ""; // Kosongkan input judul
+    document.getElementById('noteContent').value = ""; // Kosongkan input isi catatan
+
+    displayNotes(); // Perbarui tampilan catatan
+}
+
+function showNoteDetail(index) {
+    const notes = JSON.parse(localStorage.getItem('notesList')) || [];
+    const note = notes[index];
+
+    // Format tanggal catatan (menggunakan tanggal saat catatan disimpan)
+    const date = new Date(note.timestamp);
+    const formattedDate = `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
+
+    document.getElementById('detailDate').textContent = formattedDate;
+    document.getElementById('detailTitle').textContent = note.title;
+    document.getElementById('detailContent').textContent = note.content;
+    document.getElementById('detailModal').style.display = 'flex';
+
+    // Simpan index catatan yang sedang dilihat untuk keperluan penghapusan
+    currentNoteIndex = index;
+}
+
+function closeModal() {
+    document.getElementById('detailModal').style.display = 'none';
+    currentNoteIndex = null; // Reset index saat modal ditutup
+}
+
+function deleteNote() {
+    if (currentNoteIndex === null) return; // Tidak ada catatan yang dipilih
+
+    // Tampilkan konfirmasi sebelum menghapus catatan
+    const confirmation = confirm("Apakah Anda yakin ingin menghapus catatan ini?");
+    if (!confirmation) return; // Jika pengguna memilih 'Batal', keluar dari fungsi
+
+    const notes = JSON.parse(localStorage.getItem('notesList')) || [];
+    notes.splice(currentNoteIndex, 1); // Hapus catatan berdasarkan index
+    localStorage.setItem('notesList', JSON.stringify(notes));
+
+    displayNotes(); // Perbarui tampilan catatan
+    closeModal(); // Tutup modal setelah penghapusan
+    alert("Catatan berhasil dihapus!"); // Beri notifikasi setelah penghapusan
+}
+
+document.getElementById('currentYear').innerHTML = new Date().getFullYear();
 </script>
 
 </body>
